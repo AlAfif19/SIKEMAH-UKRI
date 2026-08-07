@@ -1,0 +1,188 @@
+/* Perbaikan spacing SIKEMAH — tema aslinya tidak memberi jarak yang cukup
+   antara judul halaman (.pagetitle) dan konten section di bawahnya. */
+
+.pagetitle {
+    margin-top: 4px;
+    margin-bottom: 14px;
+}
+
+.pagetitle h1 {
+    font-size: 21px;
+}
+
+.section {
+    margin-top: 4px;
+}
+
+/* Akar masalah spacing: tema mengatur .card-body { padding-top: 0 } dan
+   mengandalkan elemen .card-title di awal untuk memberi jarak atas. Banyak
+   halaman di sini tidak memakai .card-title, jadi kontennya mepet ke tepi
+   atas kotak putih. Beri padding atas tetap supaya konsisten di semua kartu. */
+.card-body {
+    padding-top: 12px;
+}
+
+.card {
+    margin-bottom: 14px;
+}
+
+/* ==================================================================
+   UKURAN LEBIH RINGKAS — teks & tabel dibuat sedikit lebih kecil supaya
+   tidak terasa padat, di semua ukuran layar.
+   ================================================================== */
+.card-title {
+    font-size: 16px;
+}
+
+table.table {
+    font-size: 0.9rem;
+}
+
+table.table th,
+table.table td {
+    padding: 0.5rem 0.6rem;
+}
+
+.form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.3rem;
+}
+
+.form-control,
+.form-select {
+    font-size: 0.9rem;
+}
+
+.btn {
+    font-size: 0.9rem;
+}
+
+.breadcrumb {
+    font-size: 0.85rem;
+}
+
+/* ==================================================================
+   HEADER — pastikan logo & tombol hamburger SELALU sejajar (satu baris),
+   tidak pernah tersusun vertikal/tumpuk, di ukuran layar berapa pun.
+   ================================================================== */
+#header {
+    flex-wrap: nowrap;
+}
+
+#header .d-flex.justify-content-between {
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    flex-shrink: 0;
+    gap: 8px;
+}
+
+#header .logo {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+#header .toggle-sidebar-btn {
+    flex-shrink: 0;
+}
+
+.header-nav > ul {
+    flex-wrap: nowrap !important;
+}
+
+@media (max-width: 480px) {
+    #header {
+        padding-left: 10px;
+    }
+
+    #header .logo img {
+        max-height: 22px;
+    }
+
+    .header-nav ul li.pe-3 {
+        padding-right: 0.6rem !important;
+    }
+}
+
+/* ==================================================================
+   RESPONSIVE — supaya tidak berantakan saat layar diperkecil (tablet/HP).
+   Ruang lingkup SENGAJA dibatasi ke dalam ".section" (konten halaman),
+   supaya tidak ikut mempengaruhi header/sidebar tema.
+   ================================================================== */
+@media (max-width: 768px) {
+    #main {
+        padding: 12px 14px;
+    }
+
+    .pagetitle {
+        margin-bottom: 10px;
+    }
+
+    .pagetitle h1 {
+        font-size: 18px;
+    }
+
+    .card-body {
+        padding: 10px 12px 12px 12px !important;
+    }
+
+    .card {
+        margin-bottom: 12px;
+    }
+
+    /* Tabel lebar (banyak kolom) jadi bisa di-scroll horizontal di dalam
+       kartu, bukan memaksa keluar/merusak layout kartu. */
+    .section .card-body {
+        overflow-x: auto;
+    }
+
+    .section .card-body table {
+        min-width: 640px;
+        font-size: 0.85rem;
+    }
+
+    /* Baris "filter/cari + tombol tambah" di dalam konten halaman — biar
+       tidak saling tumpuk/kepotong, susun jadi vertikal di layar kecil.
+       Dibatasi ke ".section" supaya TIDAK mengenai header tema. */
+    .section .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 10px;
+    }
+
+    .section .d-flex.justify-content-between > .d-flex {
+        flex-wrap: wrap;
+    }
+
+    /* Input/select pencarian yang lebarnya di-set tetap (misal 220px) di
+       banyak halaman admin — biar tidak meluber di layar sempit. */
+    .section .form-select,
+    .section .form-control {
+        max-width: 100% !important;
+    }
+
+    .section .d-flex input.form-control,
+    .section .d-flex select.form-select {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagetitle h1 {
+        font-size: 16px;
+    }
+
+    .card-body {
+        padding: 8px 10px 10px 10px !important;
+    }
+
+    .btn {
+        font-size: 0.82rem;
+    }
+
+    table.table th,
+    table.table td {
+        padding: 0.4rem 0.5rem;
+    }
+}
