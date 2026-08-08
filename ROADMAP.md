@@ -226,13 +226,13 @@ cd d:\project\simantap\sikemah-ukri
 
 php artisan migrate:fresh --seed
 
-php artisan serve --host=127.0.0.1 --port=8001
+php artisan serve --host=127.0.0.1 --port=8000
 ```
 
 Akses aplikasi
 
 ```
-http://127.0.0.1:8001
+http://127.0.0.1:8000
 ```
 
 ---

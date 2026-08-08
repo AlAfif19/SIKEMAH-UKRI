@@ -2,30 +2,32 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Auth\Concerns\RedirectsSetelahLogin;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
 
+/**
+ * Login SIKEMAH sekarang HANYA lewat SSO UKRI — tidak ada lagi form login
+ * mandiri (email/password) per sistem. Halaman /login praktis hanya jadi
+ * "pintu masuk" yang langsung meneruskan ke SsoController::redirect().
+ *
+ * Halaman auth.login tetap dirender (bukan langsung redirect dari sini)
+ * hanya kalau ada pesan error yang perlu ditampilkan ke user (mis. login
+ * SSO gagal/dibatalkan) — supaya pesannya sempat terlihat sebelum user
+ * klik ulang "Login dengan SSO UKRI".
+ */
 class AuthenticatedSessionController extends Controller
 {
-    use RedirectsSetelahLogin;
-
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
-        return view('auth.login');
-    }
+        if (session()->has('error')) {
+            return view('auth.login');
+        }
 
-    public function store(LoginRequest $request): RedirectResponse
-    {
-        $request->authenticate();
-        $request->session()->regenerate();
-
-        return $this->redirectSetelahLogin(auth()->user());
+        return redirect()->route('sso.redirect');
     }
 
     public function destroy(Request $request): RedirectResponse

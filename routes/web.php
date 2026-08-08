@@ -19,7 +19,6 @@ Route::redirect('/', '/login');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
     Route::get('/auth/sso/redirect', [SsoController::class, 'redirect'])->name('sso.redirect');
     Route::get('/auth/sso/callback', [SsoController::class, 'callback'])->name('sso.callback');

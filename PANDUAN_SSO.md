@@ -1,6 +1,6 @@
 # Integrasi SSO UKRI — Panduan
 
-Status: **sudah diimplementasikan dan aktif** (`SSO_ENABLED=true` di `.env` lokal saat ini). Login manual (email/NIM + password) tetap berjalan seperti biasa berdampingan dengan SSO — dua-duanya bisa dipakai kapan saja.
+Status: **sudah diimplementasikan dan aktif** (`SSO_ENABLED=true` di `.env` lokal saat ini). **Login manual (email/NIM + password) sudah dihapus.** `/login` sekarang otomatis meneruskan ke SSO UKRI — satu-satunya cara masuk ke SIKEMAH.
 
 ## Bagian yang terlibat
 
@@ -10,12 +10,13 @@ Status: **sudah diimplementasikan dan aktif** (`SSO_ENABLED=true` di `.env` loka
 | Routes | `routes/web.php` | `GET /auth/sso/redirect` (nama `sso.redirect`) dan `GET /auth/sso/callback` (nama `sso.callback`), ada di dalam grup middleware `guest` bersama route `/login`. |
 | Konfigurasi | `config/services.php` → `services.sso.*` | Dibaca dari `.env`: `SSO_ENABLED`, `SSO_URL`, `SSO_CLIENT_ID`, `SSO_CLIENT_SECRET`, `SSO_REDIRECT_URI`, `SSO_TIMEOUT`. |
 | Kolom DB | `pengguna.sso_username` (nullable, unique) | Mencocokkan akun SSO ke akun lokal SIKEMAH; lihat migration `2026_07_30_000001_add_sso_username_to_pengguna_table.php`. |
-| View | `resources/views/auth/login.blade.php` | Tombol "Login dengan SSO UKRI" muncul otomatis kalau `services.sso.enabled` bernilai true — tidak perlu ubah kode saat aktivasi/nonaktivasi. |
+| View | `resources/views/auth/login.blade.php` | Tidak ada lagi form email/password. Hanya tombol "Login dengan SSO UKRI" (muncul kalau `services.sso.enabled` true) dan pesan error kalau ada. |
 | Logout | `app/Http/Controllers/Auth/AuthenticatedSessionController.php` | Kalau user login lewat SSO (ada `sso_token` di session), logout lokal juga mencoba mencabut token di server SSO (`/api/logout`) secara best-effort — gagal di sini tidak menggagalkan logout lokal. |
 
 ## Alur login SSO
 
-1. User klik "Login dengan SSO UKRI" → `GET /auth/sso/redirect`.
+0. User buka `/login` → `AuthenticatedSessionController::create()` langsung `redirect()->route('sso.redirect')` (tanpa perlu klik apa pun), KECUALI ada pesan error tersimpan di session (mis. login SSO sebelumnya gagal) — saat itu halaman `auth.login` ditampilkan dulu supaya pesannya kebaca, dengan tombol "Login dengan SSO UKRI" untuk coba lagi.
+1. (Manual) User klik "Login dengan SSO UKRI" → `GET /auth/sso/redirect`.
 2. SIKEMAH generate `state` acak (disimpan di session, proteksi CSRF) lalu redirect ke `{SSO_URL}/oauth/authorize?client_id=...&redirect_uri=...&response_type=code&scope=&state=...`.
 3. User login di halaman SSO UKRI, lalu SSO redirect balik ke `SSO_REDIRECT_URI` (`/auth/sso/callback`) dengan `?code=...&state=...`.
 4. `SsoController::callback()`:
@@ -59,4 +60,20 @@ APP_URL=http://localhost:8000
 
 ## Kalau SSO perlu dimatikan sementara
 
-Set `SSO_ENABLED=false` di `.env` (tanpa perlu hapus kredensial lain). Tombol di halaman login otomatis hilang dan route SSO otomatis 404 — login manual tidak terpengaruh sama sekali.
+Set `SSO_ENABLED=false` di `.env` (tanpa perlu hapus kredensial lain). Halaman `/login` akan menampilkan pesan "Login SSO belum dikonfigurasi" karena **tidak ada lagi jalur login manual sebagai cadangan** — SIKEMAH sepenuhnya bergantung pada SSO UKRI untuk autentikasi.
+
+## Menjalankan lokal di port 8000 (SIKEMAH & RIS bergantian)
+
+SIKEMAH dan RIS memakai `client_id`/`client_secret` SSO yang sama, dan sama-sama didaftarkan dengan redirect URI `http://localhost:8000/auth/sso/callback`. Karena keduanya tidak dijalankan bersamaan di lokal, tidak masalah berbagi port 8000 & redirect URI yang sama:
+
+```bash
+# Jalankan SIKEMAH saja
+cd sikemah-ukri && php artisan serve --port=8000
+
+# Setelah dimatikan (Ctrl+C), baru jalankan RIS
+cd ris-ukri && php artisan serve --port=8000
+```
+
+Database keduanya tetap terpisah (`sikemah_ukri` vs `ris_ukri`), jadi tidak ada konflik data — yang dipakai bersama hanyalah port lokal dan URL callback SSO.
+
+**Untuk produksi**, RIS dan SIKEMAH akan di-hosting di domain berbeda. Karena semua nilai ini (`APP_URL`, `SSO_REDIRECT_URI`, dan kredensial SSO) sepenuhnya dibaca dari `.env`, migrasi ke produksi cukup: isi `.env` masing-masing app dengan domain aslinya, lalu minta Administrator SSO mendaftarkan kedua redirect URI produksi tersebut (berbeda per app, karena domainnya beda) untuk `client_id` yang dipakai — tidak ada perubahan kode.
