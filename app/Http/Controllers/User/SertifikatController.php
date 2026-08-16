@@ -93,14 +93,33 @@ class SertifikatController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
+            $pesanError = 'Terjadi kesalahan saat memproses berkas. Coba lagi atau gunakan berkas lain.';
+
+            // Form dikirim lewat XHR (lihat create.blade.php) supaya progress bar bisa
+            // ditampilkan. Kalau di sini kita tetap redirect() seperti request biasa,
+            // XHR akan otomatis mengikuti redirect itu SEBELUM JS sempat membaca
+            // responsnya — flash message pun "termakan" oleh request susulan itu dan
+            // tidak pernah sampai ke pengguna. Untuk request yang mengharapkan JSON,
+            // balas langsung dengan JSON supaya JS bisa menampilkan pesan tanpa
+            // bergantung pada redirect/session flash.
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $pesanError], 500);
+            }
+
             return back()
                 ->withInput()
-                ->with('error', 'Terjadi kesalahan saat memproses berkas. Coba lagi atau gunakan berkas lain.');
+                ->with('error', $pesanError);
+        }
+
+        $pesanSukses = 'Sertifikat berhasil diajukan. Menunggu validasi admin.';
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $pesanSukses]);
         }
 
         return redirect()
             ->route('user.sertifikat.create')
-            ->with('success', 'Sertifikat berhasil diajukan. Menunggu validasi admin.');
+            ->with('success', $pesanSukses);
     }
 
     public function destroy(Sertifikat $sertifikat): RedirectResponse

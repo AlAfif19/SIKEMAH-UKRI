@@ -6,6 +6,7 @@ use App\Enums\PeranPengguna;
 use App\Models\Jenis;
 use App\Models\JenisKegiatan;
 use App\Models\Kategori;
+use App\Models\Mahasiswa;
 use App\Models\SkemaPoin;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -22,10 +23,25 @@ class DatabaseSeeder extends Seeder
             'peran' => PeranPengguna::Admin,
         ]);
 
-        // Data mahasiswa TIDAK diseed di sini — akun mahasiswa diisi dari
-        // Master Data API UKRI lewat:
+        // Akun mahasiswa NORMALNYA diisi dari Master Data API UKRI lewat:
         //   php artisan data-master:import-mahasiswa
-        // atau otomatis saat login SSO (begitu fitur itu dibangun).
+        // atau otomatis saat login SSO. Satu akun demo di bawah HANYA untuk
+        // dipakai tombol guest login (GuestLoginController) selama SSO
+        // belum aktif — hapus/ganti kalau data mahasiswa asli sudah masuk.
+        $mahasiswaDemo = User::create([
+            'nama' => 'Mahasiswa Demo',
+            'email' => 'mahasiswa@sikemah.ukri',
+            'password' => Hash::make('password'),
+            'peran' => PeranPengguna::Mahasiswa,
+        ]);
+
+        Mahasiswa::create([
+            'pengguna_id' => $mahasiswaDemo->id,
+            'nim' => '00000000',
+            'prodi' => 'Sistem Informasi',
+            'fakultas' => 'FIKSI',
+            'angkatan' => '2024',
+        ]);
 
         $this->seedKategoriKegiatanJenisDanSkemaPoin();
     }

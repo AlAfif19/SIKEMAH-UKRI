@@ -15,15 +15,17 @@ use Illuminate\View\View;
  * "pintu masuk" yang langsung meneruskan ke SsoController::redirect().
  *
  * Halaman auth.login tetap dirender (bukan langsung redirect dari sini)
- * hanya kalau ada pesan error yang perlu ditampilkan ke user (mis. login
+ * kalau: (a) ada pesan error yang perlu ditampilkan ke user (mis. login
  * SSO gagal/dibatalkan) — supaya pesannya sempat terlihat sebelum user
- * klik ulang "Login dengan SSO UKRI".
+ * klik ulang "Login dengan SSO UKRI"; atau (b) SSO belum aktif — supaya
+ * tombol guest login (lihat GuestLoginController, SEMENTARA sebelum SSO
+ * jalan) sempat terlihat, bukan langsung mental ke SSO yang belum siap.
  */
 class AuthenticatedSessionController extends Controller
 {
     public function create(): View|RedirectResponse
     {
-        if (session()->has('error')) {
+        if (session()->has('error') || ! config('services.sso.enabled')) {
             return view('auth.login');
         }
 

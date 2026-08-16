@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PortofolioMahasiswaController;
 use App\Http\Controllers\Admin\SkemaPoinController;
 use App\Http\Controllers\Admin\ValidasiSertifikatController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\GuestLoginController;
 use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\User\DashboardController as UserDashboardController;
 use App\Http\Controllers\User\SertifikatController as UserSertifikatController;
@@ -22,6 +23,10 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/auth/sso/redirect', [SsoController::class, 'redirect'])->name('sso.redirect');
     Route::get('/auth/sso/callback', [SsoController::class, 'callback'])->name('sso.callback');
+
+    // Guest login SEMENTARA selama SSO belum aktif — lihat GuestLoginController.
+    Route::get('/auth/guest/admin', [GuestLoginController::class, 'admin'])->name('guest-login.admin');
+    Route::get('/auth/guest/mahasiswa', [GuestLoginController::class, 'mahasiswa'])->name('guest-login.mahasiswa');
 });
 
 Route::middleware('auth')->group(function () {
