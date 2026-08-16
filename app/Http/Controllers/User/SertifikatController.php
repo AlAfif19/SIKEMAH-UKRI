@@ -113,12 +113,22 @@ class SertifikatController extends Controller
 
         $pesanSukses = 'Sertifikat berhasil diajukan. Menunggu validasi admin.';
 
+        // Flash disimpan di sini (bukan lewat redirect()->with()) supaya tetap aman
+        // dipakai oleh alur JSON: JS akan melakukan SATU kali navigasi manual ke
+        // halaman Riwayat setelah menerima respons ini, jadi flash hanya "dimakan"
+        // oleh request navigasi itu — tidak ada hop tersembunyi seperti saat masih
+        // pakai redirect() langsung dari sini (lihat riwayat percakapan sebelumnya).
+        session()->flash('success', $pesanSukses);
+
         if ($request->expectsJson()) {
-            return response()->json(['message' => $pesanSukses]);
+            return response()->json([
+                'message' => $pesanSukses,
+                'redirect' => route('user.sertifikat.index'),
+            ]);
         }
 
         return redirect()
-            ->route('user.sertifikat.create')
+            ->route('user.sertifikat.index')
             ->with('success', $pesanSukses);
     }
 

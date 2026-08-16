@@ -480,22 +480,22 @@
 
         xhr.addEventListener('load', () => {
             btnSubmit.disabled = false;
-            areaProgress.classList.add('d-none');
 
-            // Catatan: kita TIDAK lagi redirect ke xhr.responseURL di sini.
-            // Server sekarang membalas JSON langsung (lihat SertifikatController::store),
-            // jadi notifikasi ditampilkan langsung dari respons ini — tidak bergantung
-            // pada session flash yang bisa "termakan" oleh redirect otomatis XHR.
+            // Sukses: server sudah menyimpan flash 'success' + mengirim URL Riwayat
+            // lewat JSON. Kita navigasi SATU KALI ke sana — supaya notifikasi
+            // (session flash) sampai utuh ke halaman Riwayat, tanpa hop tersembunyi
+            // yang bikin pesannya "termakan" seperti sebelumnya.
             if (xhr.status >= 200 && xhr.status < 300) {
                 let respons = {};
                 try { respons = JSON.parse(xhr.responseText); } catch (e) {}
 
-                areaPesan.innerHTML = '<div class="alert alert-success py-2">'
-                    + (respons.message || 'Sertifikat berhasil diajukan.')
-                    + '</div>';
+                window.location.href = respons.redirect || '{{ route('user.sertifikat.index') }}';
+                return;
+            }
 
-                resetFormSertifikat();
-            } else if (xhr.status === 422) {
+            areaProgress.classList.add('d-none');
+
+            if (xhr.status === 422) {
                 const respons = JSON.parse(xhr.responseText);
                 const daftarError = Object.values(respons.errors ?? {}).flat();
                 areaPesan.innerHTML = '<div class="alert alert-danger py-2">' + daftarError.join('<br>') + '</div>';
@@ -514,25 +514,6 @@
             areaProgress.classList.add('d-none');
             areaPesan.innerHTML = '<div class="alert alert-danger py-2">Koneksi terputus saat mengunggah. Coba lagi.</div>';
         });
-
-        // Reset seluruh form setelah upload berhasil, supaya pengguna bisa langsung
-        // mengajukan sertifikat lain tanpa perlu reload halaman.
-        function resetFormSertifikat() {
-            form.reset();
-            areaPreview.classList.add('d-none');
-            previewGambar.innerHTML = '';
-            progressBar.style.width = '0%';
-            progressBar.textContent = '0%';
-            tampilanPoin.textContent = '-';
-
-            // select2-style dependent dropdown perlu di-reset manual karena isinya
-            // diisi ulang secara dinamis oleh JS (bukan lewat form.reset() bawaan).
-            filterKategori.value = '';
-            filterKategori.dispatchEvent(new Event('change'));
-            infoBox.classList.add('d-none');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
 
         xhr.open('POST', form.action, true);
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
