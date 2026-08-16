@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Notifikasi;
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
@@ -40,6 +41,26 @@ class AppServiceProvider extends ServiceProvider
         if (str_starts_with((string) config('app.url'), 'https://')) {
             URL::forceScheme('https');
         }
+
+        // PENTING — perbaikan ERR_TOO_MANY_REDIRECTS di '/' saat sudah login:
+        //
+        // Route '/' (lihat routes/web.php) selalu redirect ke '/login', dan
+        // '/login' ada di middleware 'guest' bawaan Laravel (RedirectIfAuthenticated).
+        // Kalau user SUDAH login, middleware itu akan redirect ke
+        // defaultRedirectUri()-nya sendiri, yang mencari route bernama persis
+        // 'dashboard' atau 'home'. Project ini tidak punya route dengan nama itu
+        // (yang ada 'admin.dashboard' / 'user.dashboard'), jadi fallback bawaan
+        // jatuh ke '/' — yang balik lagi redirect ke '/login' — looping selamanya.
+        //
+        // Override di sini supaya user yang sudah login diarahkan ke dashboard
+        // sesuai perannya (sama seperti RedirectsSetelahLogin), bukan ke '/'.
+        RedirectIfAuthenticated::redirectUsing(function ($request) {
+            $pengguna = $request->user();
+
+            return $pengguna && $pengguna->isAdmin()
+                ? route('admin.dashboard')
+                : route('user.dashboard');
+        });
 
         View::composer('layouts.app', function ($view) {
             if (! auth()->check()) {

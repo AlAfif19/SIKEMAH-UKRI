@@ -64,7 +64,11 @@
                                     <td>{{ number_format($skema->poin, 0) }}</td>
                                     <td class="text-end">
                                         <form action="{{ route('admin.jenis.skema-poin.destroy', [$jenis, $skema]) }}"
-                                              method="POST" onsubmit="return confirm('Hapus skema poin ini?');">
+                                              method="POST"
+                                              data-confirm="Hapus skema poin ini?"
+                                              data-confirm-title="Hapus Skema Poin"
+                                              data-confirm-tombol="Ya, Hapus"
+                                              data-confirm-tipe="danger">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger">

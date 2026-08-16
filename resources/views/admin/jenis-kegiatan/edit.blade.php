@@ -110,7 +110,10 @@
                                         </a>
                                         <form action="{{ route('admin.jenis-kegiatan.jenis.destroy', [$jenisKegiatan, $item]) }}"
                                               method="POST" class="d-inline"
-                                              onsubmit="return confirm('Hapus jenis ini beserta skema poinnya?');">
+                                              data-confirm="Hapus jenis ini beserta skema poinnya?"
+                                              data-confirm-title="Hapus Jenis"
+                                              data-confirm-tombol="Ya, Hapus"
+                                              data-confirm-tipe="danger">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-outline-danger">

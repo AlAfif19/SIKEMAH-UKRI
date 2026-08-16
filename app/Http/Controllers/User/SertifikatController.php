@@ -8,6 +8,7 @@ use App\Models\Jenis;
 use App\Models\JenisKegiatan;
 use App\Models\Kategori;
 use App\Models\Sertifikat;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -49,7 +50,14 @@ class SertifikatController extends Controller
         ));
     }
 
-    public function store(StoreSertifikatRequest $request): RedirectResponse
+    // Union type: request AJAX (Accept: application/json) dibalas JsonResponse
+    // (lihat expectsJson() di bawah), request biasa tetap dibalas RedirectResponse.
+    // Sebelumnya method ini masih dideklarasikan cuma ": RedirectResponse", jadi
+    // ketika cabang JSON dieksekusi, PHP melempar TypeError SETELAH data sudah
+    // tersimpan — makanya sertifikat sempat masuk ke database tapi pengguna tetap
+    // melihat pesan gagal (lihat laravel.log: "Return value must be of type
+    // Illuminate\Http\RedirectResponse, Illuminate\Http\JsonResponse returned").
+    public function store(StoreSertifikatRequest $request): RedirectResponse|JsonResponse
     {
         $mahasiswa = auth()->user()->mahasiswa;
         $data = $request->validated();

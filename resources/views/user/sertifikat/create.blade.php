@@ -181,7 +181,7 @@
                         <div class="row">
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Tanggal Mulai</label>
-                                <input type="date" name="tanggal_mulai" value="{{ old('tanggal_mulai') }}"
+                                <input type="date" name="tanggal_mulai" id="input-tanggal-mulai" value="{{ old('tanggal_mulai') }}"
                                        class="form-control @error('tanggal_mulai') is-invalid @enderror">
                                 @error('tanggal_mulai')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -189,11 +189,14 @@
                             </div>
                             <div class="col-12 col-md-6 mb-3">
                                 <label class="form-label fw-semibold">Tanggal Selesai</label>
-                                <input type="date" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}"
+                                <input type="date" name="tanggal_selesai" id="input-tanggal-selesai" value="{{ old('tanggal_selesai') }}"
                                        class="form-control @error('tanggal_selesai') is-invalid @enderror">
                                 @error('tanggal_selesai')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="invalid-feedback" id="pesan-tanggal-tidak-logis">
+                                    Tanggal selesai tidak boleh sebelum tanggal mulai.
+                                </div>
                             </div>
                         </div>
 
@@ -409,6 +412,8 @@
     const progressBar = document.getElementById('progress-bar');
     const areaPesan = document.getElementById('area-pesan');
     const btnSubmit = document.getElementById('btn-submit');
+    const inputTanggalMulai = document.getElementById('input-tanggal-mulai');
+    const inputTanggalSelesai = document.getElementById('input-tanggal-selesai');
 
     dropzone.addEventListener('click', () => inputBerkas.click());
 
@@ -454,12 +459,41 @@
         areaPreview.classList.add('d-none');
     });
 
+    // Validasi logika tanggal langsung saat dipilih — jangan tunggu sampai klik
+    // Simpan. Sebelumnya form tetap bisa di-submit walau tanggal selesai < tanggal
+    // mulai; baru gagal di validasi server (422) tanpa disadari sebagai kesalahan
+    // tanggal, dan datanya memang tidak pernah masuk ke Riwayat.
+    function tanggalLogis() {
+        if (! inputTanggalMulai.value || ! inputTanggalSelesai.value) {
+            inputTanggalSelesai.classList.remove('is-invalid');
+            return true;
+        }
+
+        const logis = inputTanggalSelesai.value >= inputTanggalMulai.value;
+        inputTanggalSelesai.classList.toggle('is-invalid', ! logis);
+        return logis;
+    }
+
+    // Batasi date picker Tanggal Selesai supaya tidak bisa memilih tanggal
+    // sebelum Tanggal Mulai sama sekali (lapisan pertama, sebelum validasi di atas).
+    inputTanggalMulai.addEventListener('change', () => {
+        inputTanggalSelesai.min = inputTanggalMulai.value || '';
+        tanggalLogis();
+    });
+    inputTanggalSelesai.addEventListener('change', tanggalLogis);
+
     // Submit lewat XHR agar progress upload bisa ditampilkan (form biasa tidak bisa)
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
         if (! inputBerkas.files.length) {
             areaPesan.innerHTML = '<div class="alert alert-danger py-2">Pilih berkas sertifikat terlebih dahulu.</div>';
+            return;
+        }
+
+        if (! tanggalLogis()) {
+            areaPesan.innerHTML = '<div class="alert alert-danger py-2">Tanggal selesai tidak boleh sebelum tanggal mulai. Perbaiki dulu tanggalnya.</div>';
+            inputTanggalSelesai.focus();
             return;
         }
 

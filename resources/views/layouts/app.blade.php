@@ -179,6 +179,40 @@
 
 </footer>
 
+{{-- ================= Modal Konfirmasi (pengganti confirm() bawaan browser) =================
+     Dipakai lewat atribut data- di elemen <form>, bukan lagi window.confirm()/alert() yang
+     terlihat "bukan bagian aplikasi". Contoh pemakaian pada form yang perlu konfirmasi
+     sebelum submit (hapus, tolak, batalkan, dsb.):
+
+         <form method="POST" action="..."
+               data-confirm="Hapus kategori ini?"
+               data-confirm-title="Hapus Kategori"
+               data-confirm-tombol="Ya, Hapus"
+               data-confirm-tipe="danger">
+
+     data-confirm-tipe menentukan warna tombol konfirmasi: danger (aksi merusak/menghapus),
+     success (menyetujui), primary (default). JS di bawah otomatis mencegat submit form apa
+     pun yang punya atribut data-confirm, menampilkan modal ini, dan baru submit form asli
+     kalau pengguna menekan tombol konfirmasi — bukan lagi popup bawaan browser. Dipasang
+     sekali di sini (bukan per halaman) supaya berlaku juga untuk tabel yang dimuat ulang
+     lewat AJAX (mis. Validasi Sertifikat, Kategori, Jenis Kegiatan) karena event listener-nya
+     didaftarkan lewat delegasi ke document, bukan ke elemen form itu sendiri. --}}
+<div class="modal fade" id="modal-konfirmasi" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-konfirmasi-judul">Konfirmasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body" id="modal-konfirmasi-pesan"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary" id="modal-konfirmasi-tombol">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/apexcharts/apexcharts.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/echarts/echarts.min.js') }}"></script>
@@ -204,6 +238,51 @@
             html.classList.toggle('dark-mode');
             localStorage.setItem('sikemah-dark-mode', html.classList.contains('dark-mode') ? 'aktif' : 'nonaktif');
             perbaruiIkon();
+        });
+    })();
+
+    // Cegat submit SEMUA form yang punya atribut data-confirm, di seluruh halaman
+    // (termasuk yang dimuat belakangan lewat AJAX) — ganti confirm() bawaan browser
+    // dengan modal Bootstrap yang konsisten dengan tampilan aplikasi.
+    (function () {
+        const modalEl = document.getElementById('modal-konfirmasi');
+        const elJudul = document.getElementById('modal-konfirmasi-judul');
+        const elPesan = document.getElementById('modal-konfirmasi-pesan');
+        let tombolAksi = document.getElementById('modal-konfirmasi-tombol');
+
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+
+            if (! (form instanceof HTMLFormElement) || ! form.dataset.confirm) {
+                return;
+            }
+
+            // Form ini sudah dikonfirmasi (submit terprogram setelah klik "Ya") — biarkan lolos.
+            if (form.dataset.confirmed === '1') {
+                return;
+            }
+
+            e.preventDefault();
+
+            elJudul.textContent = form.dataset.confirmTitle || 'Konfirmasi';
+            elPesan.textContent = form.dataset.confirm;
+
+            tombolAksi.textContent = form.dataset.confirmTombol || 'Ya, Lanjutkan';
+            tombolAksi.className = 'btn btn-' + (form.dataset.confirmTipe || 'primary');
+
+            // Ganti elemen tombol tiap kali tampil supaya listener klik sebelumnya
+            // (untuk form lain) tidak ikut menumpuk dan salah memicu form yang salah.
+            const tombolBaru = tombolAksi.cloneNode(true);
+            tombolAksi.parentNode.replaceChild(tombolBaru, tombolAksi);
+            tombolAksi = tombolBaru;
+
+            tombolAksi.addEventListener('click', function () {
+                bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                form.dataset.confirmed = '1';
+                form.requestSubmit ? form.requestSubmit() : form.submit();
+            });
+
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
         });
     })();
 </script>

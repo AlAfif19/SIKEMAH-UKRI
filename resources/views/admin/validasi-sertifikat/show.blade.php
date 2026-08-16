@@ -62,14 +62,17 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Setujui Pengajuan</h5>
-                        <form method="POST" action="{{ route('admin.validasi-sertifikat.setujui', $sertifikat) }}">
+                        <form method="POST" action="{{ route('admin.validasi-sertifikat.setujui', $sertifikat) }}"
+                              data-confirm="Setujui pengajuan ini? Poin akan langsung ditambahkan ke portofolio mahasiswa."
+                              data-confirm-title="Setujui Pengajuan"
+                              data-confirm-tombol="Ya, Setujui"
+                              data-confirm-tipe="success">
                             @csrf
                             <div class="mb-2">
                                 <label class="form-label small">Catatan (opsional)</label>
                                 <textarea name="catatan" class="form-control" rows="2"></textarea>
                             </div>
-                            <button type="submit" class="btn btn-success w-100"
-                                    onclick="return confirm('Setujui pengajuan ini? Poin akan langsung ditambahkan ke portofolio mahasiswa.');">
+                            <button type="submit" class="btn btn-success w-100">
                                 <i class="bi bi-check-lg"></i> Setujui
                             </button>
                         </form>
@@ -79,7 +82,11 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Tolak Pengajuan</h5>
-                        <form method="POST" action="{{ route('admin.validasi-sertifikat.tolak', $sertifikat) }}">
+                        <form method="POST" action="{{ route('admin.validasi-sertifikat.tolak', $sertifikat) }}"
+                              data-confirm="Tolak pengajuan ini?"
+                              data-confirm-title="Tolak Pengajuan"
+                              data-confirm-tombol="Ya, Tolak"
+                              data-confirm-tipe="danger">
                             @csrf
                             <div class="mb-2">
                                 <label class="form-label small">Alasan Penolakan <span class="text-danger">*</span></label>
@@ -88,8 +95,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <button type="submit" class="btn btn-danger w-100"
-                                    onclick="return confirm('Tolak pengajuan ini?');">
+                            <button type="submit" class="btn btn-danger w-100">
                                 <i class="bi bi-x-lg"></i> Tolak
                             </button>
                         </form>

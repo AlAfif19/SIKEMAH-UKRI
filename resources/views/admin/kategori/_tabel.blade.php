@@ -20,7 +20,10 @@
                     </a>
                     <form action="{{ route('admin.kategori.destroy', $item) }}"
                           method="POST" class="d-inline"
-                          onsubmit="return confirm('Hapus kategori ini?');">
+                          data-confirm="Hapus kategori ini?"
+                          data-confirm-title="Hapus Kategori"
+                          data-confirm-tombol="Ya, Hapus"
+                          data-confirm-tipe="danger">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline-danger">

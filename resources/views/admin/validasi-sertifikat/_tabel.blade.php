@@ -2,13 +2,16 @@
     <div class="alert alert-danger">{{ session('error') }}</div>
 @endif
 
-<form id="form-massal" method="POST" action="{{ route('admin.validasi-sertifikat.massal') }}">
+<form id="form-massal" method="POST" action="{{ route('admin.validasi-sertifikat.massal') }}"
+      data-confirm="Setujui semua pengajuan terpilih? Poin akan otomatis ditambahkan ke portofolio masing-masing mahasiswa."
+      data-confirm-title="Setujui Massal"
+      data-confirm-tombol="Ya, Setujui Semua"
+      data-confirm-tipe="success">
     @csrf
 
     @if ($status === 'menunggu')
         <div class="mb-2">
-            <button type="submit" class="btn btn-sm btn-success" id="btn-setujui-massal" disabled
-                    onclick="return confirm('Setujui semua pengajuan terpilih? Poin akan otomatis ditambahkan ke portofolio masing-masing mahasiswa.');">
+            <button type="submit" class="btn btn-sm btn-success" id="btn-setujui-massal" disabled>
                 <i class="bi bi-check2-all"></i> Setujui yang Dipilih
             </button>
         </div>

@@ -65,7 +65,10 @@
                                         @if ($item->status === \App\Enums\StatusSertifikat::Menunggu)
                                             <form action="{{ route('user.sertifikat.destroy', $item) }}"
                                                   method="POST" class="d-inline"
-                                                  onsubmit="return confirm('Batalkan pengajuan ini?');">
+                                                  data-confirm="Batalkan pengajuan ini?"
+                                                  data-confirm-title="Batalkan Pengajuan"
+                                                  data-confirm-tombol="Ya, Batalkan"
+                                                  data-confirm-tipe="danger">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">

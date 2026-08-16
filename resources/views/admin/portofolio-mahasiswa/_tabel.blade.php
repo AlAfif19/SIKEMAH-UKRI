@@ -22,15 +22,6 @@
                        class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-eye"></i> Lihat Portofolio
                     </a>
-                    @if (app(\App\Services\DataMasterClient::class)->aktif())
-                        <form action="{{ route('admin.portofolio-mahasiswa.sinkron-data-master', $item) }}"
-                              method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Sinkron dari Data Master">
-                                <i class="bi bi-arrow-repeat"></i>
-                            </button>
-                        </form>
-                    @endif
                 </td>
             </tr>
         @empty
